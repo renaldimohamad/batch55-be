@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model/Table ( scema table )
+
+// User
+model User {
+  id Int @id @default(autoincrement())
+  username String 
+  bio String?
+  fullName String?
+  email String?
+  password String
+  profile_pic String? 
+  createAt DateTime @default(now())
+
+  posts Posts[]
+  liked Like[]
+  following Follow[] @relation("following")
+  followers Follow[] @relation("followers")
+}
+
+// Posts
+model Posts {
+ id Int @id @default(autoincrement())
+ content String?
+ createAt DateTime @default(now()) 
+ userId Int
+ parentId Int?
+
+ post Posts? @relation("PostReplies", fields: [parentId], references: [id])
+ comments Posts[] @relation("PostReplies")
+
+ author User @relation(fields: [userId], references: [id])
+ images PostImage[]
+ likes Like[]
+}
+
+// PostIMage
+model PostImage {
+  id Int @id @default(autoincrement())
+  image String
+  postId Int
+  post Posts @relation(fields: [postId], references: [id] )
+}
+
+model Home {
+  id Int @id @default(autoincrement())
+  fullname String
+  username String
+  description String
+  image String
+  profile_pic String
+}
+
+// Status
+model Status {
+  id Int @id @default(autoincrement())
+  fullname String
+  username String
+  description String
+  image String
+  profile_pic String
+}
+
+// Like 
+model Like {
+  id    Int    @id @default(autoincrement())
+  userId Int
+  postId Int
+  user   User  @relation(fields: [userId], references: [id])
+  post   Posts @relation(fields: [postId], references: [id])
+
+@@unique([userId, postId])
+}
+
+// follow 
+model Follow {
+ id            Int    @id @default(autoincrement())
+ followingId   Int
+ followersId   Int
+ following     User @relation("following",fields: [followingId], references: [id])
+ followers     User @relation("followers",fields: [followersId], references: [id])
+}
+
